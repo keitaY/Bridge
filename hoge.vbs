@@ -5,88 +5,97 @@ objShell.RegWrite "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Zoom\Z
 Dim strInputData 
 
 ' 入力ダイアログを出力 
-strInputData = InputBox("回線番号を入力してください " & vbNewLine & " plz input cct number","Bridge（仮）") 
+strInputData = InputBox("例の番号を入力してください " & vbNewLine & " plz input cct number","Bridge（仮）") 
 
 ' 入力ダイアログで入力された値をメッセージボックスで出力 
-MsgBox "あなたの好きな食べ物は" & strInputData & "ですね！"
+If (strInputData <> "" ) Then
 
-MakeWindow "https://www.ib2.aozorabank.co.jp/ib/index.do?PT=BS&CCT0080=0398",0,0,strInputData
-'MakeWindow "https://www.ib2.aozorabank.co.jp/ib/index.do?PT=BS&CCT0080=0398",100,100,strInputData
-
+openMS strInputData
+openPI strInputData
+'openGN strInputData
 
 'Set oApp = CreateObject("PowerPoint.Application")
 'oApp.Presentations.Open("C:\Users\Keita Yamamoto\Desktop\プレゼンテーション.ppt")
 
-WindowSearchLink "https://www.ib2.aozorabank.co.jp/ib/index.do?PT=BS&CCT0080=0398","すべての商品・サービス一覧"
+End If
 
 Set WSHShell = WScript.CreateObject("WScript.Shell")
 WSHShell.AppActivate "Explorer"
  
-
-
 '-------------------------------------------------------------------------------
-Function MakeWindow(URL,top,left,strInputData)
+Function openMS(strInputData)
 
-Set objIE = CreateObject("InternetExplorer.Application")
-objIE.Visible = True
+Set objIE = openWindow("https://www.ib2.aozorabank.co.jp/ib/index.do?PT=BS&CCT0080=0398",0,0,1000,1600)
 
-objIE.FullScreen = False
-objIE.Top = top
-objIE.Left = left
-objIE.Width = 1280
-objIE.Height = 964
-
-objIE.Toolbar = False
-objIE.MenuBar = False
-objIE.AddressBar = False
-objIE.StatusBar = False
-
-objIE.Navigate2 ""+URL, navOpenInNewWindow
-Do Until objIE.Busy = False
-WScript.sleep(250)
-Loop
 objIE.Document.Forms(0).BTX0010.value = strInputData
 objIE.Document.Forms(0).S.checked = False
 objIE.Document.Forms(0).BPW0020.value = strInputData
 'objIE.Document.Forms(0).forward_BSM2010.Click
+clickLink objIE,"すべての商品・サービス一","A"
 
-MakeWindow = objIE
+openMS = objIE
 End Function
 '-------------------------------------------------------------------------------
-Function WindowSearchLink(URL,LinkString)
-'複数立ち上がったIEから IPAT　投票メニューを見つける
-   Set  objIE = CreateObject("InternetExplorer.Application")
-   objIE.Visible = True
-   objIE.Navigate2 URL, navOpenInNewWindow
+'-------------------------------------------------------------------------------
+Function openPI(strInputData)
+
+Set objIE = openWindow("http://yume.hacca.jp/koiki/form/button-link.htm",50,50,1000,1600)
+
+'objIE.Document.Forms(0).forward_BSM2010.Click
+clickLink objIE,"ボタンでリンク３","Button"
+
+openPI = objIE
+End Function
+'-------------------------------------------------------------------------------
+'-------------------------------------------------------------------------------
+Function openGN(strInputData)
+
+Set objIE = openWindow("https://www.ib2.aozorabank.co.jp/ib/index.do?PT=BS&CCT0080=0398",100,100,1000,1600)
+
+objIE.Document.Forms(0).BTX0010.value = strInputData
+objIE.Document.Forms(0).S.checked = False
+objIE.Document.Forms(0).BPW0020.value = strInputData
+'objIE.Document.Forms(0).forward_BSM2010.Click
+'clickLink objIE,"すべての商品・サービス一"
+
+openGN = objIE
+End Function
+'-------------------------------------------------------------------------------
+'-------------------------------------------------------------------------------
+Function openWindow(URL,top,left,height,width)
+Set objIE = CreateObject("InternetExplorer.Application")
+objIE.Visible = True
+objIE.FullScreen = False
+objIE.Top = top
+objIE.Left = left
+objIE.Width = width
+objIE.Height = height
+objIE.Toolbar = false
+objIE.MenuBar = false
+objIE.AddressBar = false
+objIE.StatusBar = false
+
+objIE.Navigate2 ""+URL, navOpenInNewWindow
+
+Do Until objIE.Busy = False
+WScript.sleep(250)
+Loop
+
+ Set openWindow = objIE
+End Function
+'-------------------------------------------------------------------------------
+Function clickLink(objIE,linkString,tagType)
    Do Until objIE.Busy = False
    WScript.sleep(250)
    Loop
-'↑上で見つけたIPAT　投票メニューから 入出金メニュー を 押す
-
-    'Aのタグを集める .getElementsByTagName("A")を使用
-    Set objA = objIE.Document.getElementsByTagName("A")
-
-    'ループで頭から表示してみる
+    Set objA = objIE.Document.getElementsByTagName(tagType)
     For n = 0 To objA.Length - 1
-        '※.InnerHTMLじゃなくて、.OuterHTMLでAの全体を見る
-        '入出金メニューのリンクを探す、ソースの文字を探す
-        If InStr(objA(n).OuterHTML, ""+LinkString) > 0 Then
-            objA(n).Click  'クリックする
-            Exit For  'ループを抜ける
+        If InStr(objA(n).OuterHTML, ""+linkString) > 0 Then
+            objA(n).Click  
+            Exit For  
         End If
     Next
-
-    Set objA = Nothing  'オブジェクト変数解放
+    Set objA = Nothing  
+	set clickLink = objIE
 End Function
-
-
-
 '-------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
